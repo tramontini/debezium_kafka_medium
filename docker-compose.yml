@@ -68,7 +68,7 @@ services:
          - INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
          - INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
          - REST_ADVERTISED_HOST_NAME=medium_debezium
-         - TOPIC_CREATION_ENABLE
+         - TOPIC_CREATION_ENABLE=true
 
   connector_sender:
     container_name: connector_sender
