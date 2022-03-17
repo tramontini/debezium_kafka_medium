@@ -1,7 +1,7 @@
 ## Debezium + Kafka CDC
 Repository for Medium post 
 
-## Rodando o projeto localmente
+## Running locally
 To run the project I created a Makefile with the commands.
 
 1. You need docker installed
@@ -13,17 +13,17 @@ To run the project I created a Makefile with the commands.
 To add more tables into streaming process you need to add it into `table.include.list` in the config file.
 
 ## Removing columns (filtering)
-To remove some column from streaming chance the parameter `column.exclude.list` from config file. 
+To remove a column from streaming change the parameter `column.exclude.list` in config file. 
 ## Useful commands
 Inside kafka container:
 - `kafka-topics --bootstrap-server kafka:9092 --list`: List all Kafka topics 
 - `kafka-console-producer --bootstrap-server kafka:9092 --topic topicName`: Consult messages from a topic
 
 ## Examples of a Debezium message
-You can find the full JSON of the examples inside the folder `files`, in this topic I will only show the before/after part that Debezium creates for us.
+You can find the full JSON of the examples inside the folder `files`, in this topic I will only shows the before and after part that Debezium creates for us.
 
-The payload contains three crucial informations: _before_, _after_ and _source_
-- _before_ is the how was the information state before the data change, if it is an insert the before will come as null.
+The payload contains three crucial information: _before_, _after_ and _source_
+- _before_ is how was the information state before the data change, if it is an insert, the before will come as null.
 - _after_ is the data state after the operantion, if it is a delete operation the value will be null.
 - _source_ is a compilation of the database's information like connector, name, db, table...
 - 
