@@ -1,0 +1,28 @@
+{
+    "name": "medium_debezium",
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "database.hostname": "mysql",
+        "database.port": "3306",
+        "database.user": "debezium",
+        "database.password": "dbz",
+        "database.server.id": "184054",
+        "database.server.name": "dbserver1",
+        "database.include.list": "inventory",
+        "database.history.kafka.bootstrap.servers": "kafka:9092",
+        "database.history.kafka.topic": "schema-changes.inventory",
+        "snapshot.mode": "when_needed",
+        "snapshot.locking.mode": "none",
+        "include.schema.changes": "false",
+        "key.converter.schemas.enable":"false",
+        "value.converter.schemas.enable":"false",
+        "database.allowPublicKeyRetrieval": "true",
+        "decimal.handling.mode": "string",
+        "database.history": "io.debezium.relational.history.FileDatabaseHistory",
+        "database.history.skip.unparseable.ddl": "true",
+        "database.history.file.filename":"./data/history.dat",
+        "offset.storage": "org.apache.kafka.connect.storage.FileOffsetBackingStore",
+        "offset.storage.file.filename":"./data/offsets.dat",
+        "offset.flush.interval.ms": "5000"
+    }
+}

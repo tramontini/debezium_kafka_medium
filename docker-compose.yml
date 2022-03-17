@@ -1,0 +1,93 @@
+version: '2'
+services:
+  mysql:
+    image: debezium/example-mysql:1.8
+    container_name: mysql
+    hostname: mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: debezium
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mysqlpw
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.3
+    container_name: zookeerper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - '2181:2181'
+  kafka:
+    image: confluentinc/cp-enterprise-kafka:5.5.3
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    links:
+      - zookeeper
+    ports:
+      - '9092:9092'
+  schema-registry:
+    container_name: schema-registry
+    image: confluentinc/cp-schema-registry:4.0.3
+    environment:
+      - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zookeeper:2181
+      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+      - SCHEMA_REGISTRY_LISTENERS=http://schema-registry:8081
+    ports:
+      - '8081:8081'
+  mysql_connect:
+      container_name: mysql_connect
+      #image: confluentinc/cp-kafka-connect:5.5.3
+      image: debezium/connect:1.8
+      ports:
+        - '8083:8083'
+      links:
+        - kafka
+        - zookeeper
+      environment:
+         - BOOTSTRAP_SERVERS=kafka:9092
+         - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
+         - CONNECT_REST_PORT=8083
+         - CONNECT_GROUP_ID=medium_debezium
+         - CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+         - CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+         - GROUP_ID=1
+         - CONFIG_STORAGE_TOPIC=my_connect_configs
+         - OFFSET_STORAGE_TOPIC=my_connect_offsets
+         - STATUS_STORAGE_TOPIC=my_connect_statuses
+         - CONFIG_STORAGE_REPLICATION_FACTOR=1
+         - STATUS_STORAGE_REPLICATION_FACTOR=1
+         - OFFSET_STORAGE_REPLICATION_FACTOR=1
+         - KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+         - VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+         - INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+         - INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+         - REST_ADVERTISED_HOST_NAME=medium_debezium
+         - TOPIC_CREATION_ENABLE
+
+  connector_sender:
+    container_name: connector_sender
+    image: confluentinc/cp-kafka-connect:5.5.3
+    volumes:
+      - ./conf:/conf
+    depends_on: [mysql_connect]
+    command:
+        - bash
+        - -c
+        - |
+          echo "Waiting for Kafka Connect to start listening on localhost ⏳"
+          while : ; do
+            curl_status=$$(curl -s -o /dev/null -w %{http_code} mysql_connect:8083/connectors)
+            echo -e $$(date) " Kafka Connect listener HTTP state: " $$curl_status " (waiting for 200)"
+            if [ $$curl_status -eq 200 ] ; then
+              break
+            fi
+            sleep 5 
+          done
+          echo -e "\n--\n+> Creating Data Generator source"
+          curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" mysql_connect:8083/connectors/ -d @/conf/mysql_config.json

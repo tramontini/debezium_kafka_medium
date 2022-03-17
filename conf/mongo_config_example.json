@@ -1,0 +1,28 @@
+{
+    "name": "mongo_example",
+    "config": {
+        "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+        "mongodb.name":"mongodb",
+        "mongodb.hosts": "localhost:27017",
+        "mongodb.user": "user",
+        "mongodb.password": "password",
+        "mongodb.ssl.enabled": "true"
+        "database.include.list": "mongo db",
+        "collection.include.list": "mongo collection",
+        "database.history.kafka.bootstrap.servers": "kafka:9092",
+        "database.history.kafka.topic": "schema-changes.inventory",
+        "snapshot.mode": "when_needed",
+        "snapshot.locking.mode": "none",
+        "include.schema.changes": "false",
+        "key.converter.schemas.enable":"false",
+        "value.converter.schemas.enable":"false",
+        "database.allowPublicKeyRetrieval": "true",
+        "decimal.handling.mode": "string",
+        "database.history": "io.debezium.relational.history.FileDatabaseHistory",
+        "database.history.skip.unparseable.ddl": "true",
+        "database.history.file.filename":"./data/history.dat",
+        "offset.storage": "org.apache.kafka.connect.storage.FileOffsetBackingStore",
+        "offset.storage.file.filename":"./data/offsets.dat",
+        "offset.flush.interval.ms": "5000"
+    }
+}
