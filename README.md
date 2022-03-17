@@ -20,6 +20,122 @@ Inside kafka container:
 - `kafka-console-producer --bootstrap-server kafka:9092 --topic topicName`: Consult messages from a topic
 
 ## Examples of a Debezium message
+You can find the full JSON of the examples inside the folder `files`, in this topic I will only show the before/after part that Debezium creates for us.
+
+The payload contains three crucial informations: _before_, _after_ and _source_
+- _before_ is the how was the information state before the data change, if it is an insert the before will come as null.
+- _after_ is the data state after the operantion, if it is a delete operation the value will be null.
+- _source_ is a compilation of the database's information like connector, name, db, table...
+- 
+###Insert Payload:
+```
+"payload":
+    {
+        "before": null,
+        "after":
+        {
+            "id": 9999,
+            "first_name": "matheus",
+            "last_name": "tramontini"
+        },
+        "source":
+        {
+            "version": "1.8.1.Final",
+            "connector": "mysql",
+            "name": "dbserver1",
+            "ts_ms": 1647491136000,
+            "snapshot": "false",
+            "db": "inventory",
+            "sequence": null,
+            "table": "customers",
+            "server_id": 223344,
+            "gtid": null,
+            "file": "mysql-bin.000003",
+            "pos": 791,
+            "row": 0,
+            "thread": null,
+            "query": null
+        },
+        "op": "c",
+        "ts_ms": 1647491136579,
+        "transaction": null
+    }
+```
+
+###Update Payload:
+```
+"payload":
+    {
+        "before":
+        {
+            "id": 9999,
+            "first_name": "matheus",
+            "last_name": "tramontini"
+        },
+        "after":
+        {
+            "id": 9999,
+            "first_name": "Matheus",
+            "last_name": "Tramontini"
+        },
+        "source":
+        {
+            "version": "1.8.1.Final",
+            "connector": "mysql",
+            "name": "dbserver1",
+            "ts_ms": 1647491205000,
+            "snapshot": "false",
+            "db": "inventory",
+            "sequence": null,
+            "table": "customers",
+            "server_id": 223344,
+            "gtid": null,
+            "file": "mysql-bin.000003",
+            "pos": 1152,
+            "row": 0,
+            "thread": null,
+            "query": null
+        },
+        "op": "u",
+        "ts_ms": 1647491205582,
+        "transaction": null
+    }
+```
+
+### Delete Payload:
+```
+"payload":
+    {
+        "before":
+        {
+            "id": 9999,
+            "first_name": "Matheus",
+            "last_name": "Tramontini"
+        },
+        "after": null,
+        "source":
+        {
+            "version": "1.8.1.Final",
+            "connector": "mysql",
+            "name": "dbserver1",
+            "ts_ms": 1647491261000,
+            "snapshot": "false",
+            "db": "inventory",
+            "sequence": null,
+            "table": "customers",
+            "server_id": 223344,
+            "gtid": null,
+            "file": "mysql-bin.000003",
+            "pos": 1556,
+            "row": 0,
+            "thread": null,
+            "query": null
+        },
+        "op": "d",
+        "ts_ms": 1647491261810,
+        "transaction": null
+    }
+```
 
 
 ## Referências
