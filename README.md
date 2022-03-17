@@ -138,6 +138,6 @@ The payload contains three crucial information: _before_, _after_ and _source_
 ```
 
 
-## Referências
+## References
 - [Debezium - MySQL Connector](https://debezium.io/documentation/reference/1.6/connectors/mysql.html)
 - [Debezium - MongoDb Connector](https://debezium.io/documentation/reference/1.6/connectors/mongodb.html)
