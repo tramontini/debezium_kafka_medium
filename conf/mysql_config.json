@@ -13,18 +13,7 @@
         "database.history.kafka.topic": "schema-changes.inventory",
         "table.include.list": "inventory.customers, inventory.orders",
         "column.exclude.list": "inventory.customers.email",
-        "snapshot.mode": "when_needed",
-        "snapshot.locking.mode": "none",
-        "include.schema.changes": "false",
-        "key.converter.schemas.enable":"false",
-        "value.converter.schemas.enable":"false",
-        "database.allowPublicKeyRetrieval": "true",
-        "decimal.handling.mode": "string",
-        "database.history": "io.debezium.relational.history.FileDatabaseHistory",
-        "database.history.skip.unparseable.ddl": "true",
-        "database.history.file.filename":"./data/history.dat",
-        "offset.storage": "org.apache.kafka.connect.storage.FileOffsetBackingStore",
-        "offset.storage.file.filename":"./data/offsets.dat",
-        "offset.flush.interval.ms": "5000"
+        "snapshot.mode": "initial",
+        "snapshot.locking.mode": "none"
     }
 }

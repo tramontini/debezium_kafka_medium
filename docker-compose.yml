@@ -40,9 +40,8 @@ services:
       - SCHEMA_REGISTRY_LISTENERS=http://schema-registry:8081
     ports:
       - '8081:8081'
-  mysql_connect:
-      container_name: mysql_connect
-      #image: confluentinc/cp-kafka-connect:5.5.3
+  kafka_connect:
+      container_name: kafka_connect
       image: debezium/connect:1.8
       ports:
         - '8083:8083'
@@ -51,43 +50,40 @@ services:
         - zookeeper
       environment:
          - BOOTSTRAP_SERVERS=kafka:9092
-         - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
-         - CONNECT_REST_PORT=8083
-         - CONNECT_GROUP_ID=medium_debezium
-         - CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL=http://schema-registry:8081
-         - CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL=http://schema-registry:8081
-         - GROUP_ID=1
+         - GROUP_ID=medium_debezium
          - CONFIG_STORAGE_TOPIC=my_connect_configs
-         - OFFSET_STORAGE_TOPIC=my_connect_offsets
-         - STATUS_STORAGE_TOPIC=my_connect_statuses
          - CONFIG_STORAGE_REPLICATION_FACTOR=1
-         - STATUS_STORAGE_REPLICATION_FACTOR=1
+         - OFFSET_STORAGE_TOPIC=my_connect_offsets
          - OFFSET_STORAGE_REPLICATION_FACTOR=1
-         - KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
-         - VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
-         - INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
-         - INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+         - STATUS_STORAGE_TOPIC=my_connect_statuses
+         - STATUS_STORAGE_REPLICATION_FACTOR=1
          - REST_ADVERTISED_HOST_NAME=medium_debezium
-         - TOPIC_CREATION_ENABLE=true
 
   connector_sender:
     container_name: connector_sender
     image: confluentinc/cp-kafka-connect:5.5.3
     volumes:
       - ./conf:/conf
-    depends_on: [mysql_connect]
+    depends_on:
+      - kafka_connect
     command:
         - bash
         - -c
         - |
-          echo "Waiting for Kafka Connect to start listening on localhost ⏳"
-          while : ; do
-            curl_status=$$(curl -s -o /dev/null -w %{http_code} mysql_connect:8083/connectors)
-            echo -e $$(date) " Kafka Connect listener HTTP state: " $$curl_status " (waiting for 200)"
-            if [ $$curl_status -eq 200 ] ; then
-              break
-            fi
-            sleep 5 
+          echo "Wainting for kafka connect to start..."
+          until [[ "$$(curl -s -o /dev/null -w %{http_code} kafka_connect:8083/connectors)" -eq 200 ]]; do
+            sleep 1
           done
-          echo -e "\n--\n+> Creating Data Generator source"
-          curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" mysql_connect:8083/connectors/ -d @/conf/mysql_config.json
+          echo -e "Sending connector"
+          curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" kafka_connect:8083/connectors/ -d @/conf/mysql_config.json
+          
+          
+
+#          while : ; do
+#            curl_status=$$(curl -s -o /dev/null -w %{http_code} kafka_connect:8083/connectors)
+#            echo -e $$(date) " Kafka Connect listener HTTP state: " $$curl_status " (waiting for 200)"
+#            if [ $$curl_status -eq 200 ] ; then
+#              break
+#            fi
+#            sleep 5
+#          done
