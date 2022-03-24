@@ -10,6 +10,7 @@ services:
       MYSQL_ROOT_PASSWORD: debezium
       MYSQL_USER: mysqluser
       MYSQL_PASSWORD: mysqlpw
+
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.3
     container_name: zookeerper
@@ -18,6 +19,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - '2181:2181'
+
   kafka:
     image: confluentinc/cp-enterprise-kafka:5.5.3
     container_name: kafka
@@ -31,6 +33,7 @@ services:
       - zookeeper
     ports:
       - '9092:9092'
+
   schema-registry:
     container_name: schema-registry
     image: confluentinc/cp-schema-registry:4.0.3
@@ -40,8 +43,9 @@ services:
       - SCHEMA_REGISTRY_LISTENERS=http://schema-registry:8081
     ports:
       - '8081:8081'
-  kafka_connect:
-      container_name: kafka_connect
+
+  kafka-connect:
+      container_name: kafka-connect
       image: debezium/connect:1.8
       ports:
         - '8083:8083'
@@ -59,31 +63,21 @@ services:
          - STATUS_STORAGE_REPLICATION_FACTOR=1
          - REST_ADVERTISED_HOST_NAME=medium_debezium
 
-  connector_sender:
-    container_name: connector_sender
+  connector-sender:
+    container_name: connector-sender
     image: confluentinc/cp-kafka-connect:5.5.3
     volumes:
       - ./conf:/conf
     depends_on:
-      - kafka_connect
+      - kafka-connect
     command:
         - bash
         - -c
         - |
           echo "Wainting for kafka connect to start..."
-          until [[ "$$(curl -s -o /dev/null -w %{http_code} kafka_connect:8083/connectors)" -eq 200 ]]; do
+          until [[ "$$(curl -s -o /dev/null -w %{http_code} kafka-connect:8083/connectors)" -eq 200 ]]; do
             sleep 1
           done
           echo -e "Sending connector"
-          curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" kafka_connect:8083/connectors/ -d @/conf/mysql_config.json
-          
-          
+          curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" kafka-connect:8083/connectors/ -d @/conf/mysql_config.json
 
-#          while : ; do
-#            curl_status=$$(curl -s -o /dev/null -w %{http_code} kafka_connect:8083/connectors)
-#            echo -e $$(date) " Kafka Connect listener HTTP state: " $$curl_status " (waiting for 200)"
-#            if [ $$curl_status -eq 200 ] ; then
-#              break
-#            fi
-#            sleep 5
-#          done
