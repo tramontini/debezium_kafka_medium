@@ -1,0 +1,1 @@
+curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" kafka-connect:8083/connectors/ -d /conf/mysql_config.json
