@@ -1,5 +1,5 @@
 ## Debezium + Kafka CDC
-Repository for Medium post 
+Repository for Medium post https://medium.com/nagoya-foundation/simple-cdc-with-debezium-kafka-a27b28d8c3b8
 
 ## Running locally
 To run the project I created a Makefile with the commands.
